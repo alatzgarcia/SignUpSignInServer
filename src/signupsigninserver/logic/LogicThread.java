@@ -5,19 +5,66 @@
  */
 package signupsigninserver.logic;
 
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.net.Socket;
+import java.util.logging.Logger;
+import signupsigninserver.databaseAccess.IDAO;
+import signupsigninserver.exceptions.InvalidOperationException;
+import signupsigninutilities.model.Message;
+import signupsigninutilities.model.User;
+
 /**
  *
- * @author Alatz
+ * @author Diego
  */
 public class LogicThread implements Runnable{
-
-    public LogicThread(String message, Object data) {
-        //--TOFIX
+    private static final Logger LOGGER=Logger.getLogger("signupsigninserver.logic.LogicThread");
+    private Socket client;  
+    private IDAO dao;
+    
+    public LogicThread(Socket client) {
+        this.client = client;
+    }
+    
+     public void setDao(IDAO dao) {
+        this.dao = dao;
     }
 
     @Override
     public void run() {
-        //--TOFIX
+        ObjectOutputStream oos = null;
+        ObjectInputStream ois = null;
+        try{
+            LOGGER.info("Getting the client input stream...");
+            ois = new ObjectInputStream(client.getInputStream());
+            LOGGER.info("Getting the client output stream...");
+            oos = new ObjectOutputStream(client.getOutputStream());
+            LOGGER.info("Reading the client message...");
+            Message msg = (Message)ois.readObject();
+            LOGGER.info("Mensaje recibido: " + msg.getMessage());
+            //Message msg = (Message) ois.readObject();
+            LOGGER.info("Client message arrived to the server.");
+            oos.writeObject(new Message("ok", new User()));
+            
+            switch (msg.getMessage()) {
+                case "login":
+                    //executes the login calling the dao
+                    //dao.login(msg.getData());
+                    break;
+                case "register":
+                    //executes the register calling the dao
+                    //dao.register(msg.getData());
+                    break;
+                default:
+                    //Does`t receive any of the methods so sends exception
+                    throw new InvalidOperationException();                    
+            }
+        }catch(InvalidOperationException ioo){
+            LOGGER.info(ioo.getMessage());
+        }catch(Exception e){
+            LOGGER.info(e.getMessage());
+        }
     }
     
     
