@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package signupsigninuidesktop.model;
+package signupsigninserver.model;
 
 /**
  *
@@ -11,9 +11,9 @@ package signupsigninuidesktop.model;
  */
 public class Message {
     private String message;
-    private Object data;
+    private User data;
 
-    public Message(String message, Object data) {
+    public Message(String message, User data) {
       this.message = message;
       this.data = data;
     }
