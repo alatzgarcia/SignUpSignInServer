@@ -23,8 +23,9 @@ public class LogicThread implements Runnable{
     private Socket client;  
     private IDAO dao;
     
-    public LogicThread(Socket client) {
+    public LogicThread(Socket client, IDAO dao) {
         this.client = client;
+        this.dao = dao;
     }
     
      public void setDao(IDAO dao) {

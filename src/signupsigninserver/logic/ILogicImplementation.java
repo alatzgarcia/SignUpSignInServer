@@ -12,6 +12,8 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import signupsigninserver.databaseAccess.IDAO;
+import signupsigninserver.databaseAccess.IDAOFactory;
 import signupsigninutilities.model.Message;
 import signupsigninutilities.model.User;
 
@@ -28,11 +30,12 @@ public class ILogicImplementation {
         Socket client = null;
         try{
             server = new ServerSocket(PORT);
+            IDAO dao = IDAOFactory.getDAO(); 
             while(true){
                 LOGGER.info("Awaiting for client connection on port: " + PORT);
                 client = server.accept();
                 LOGGER.info("Client connected to the application.");
-                Thread lThread = new Thread(new LogicThread(client));
+                Thread lThread = new Thread(new LogicThread(client, dao));
                 lThread.start();
                 /*LOGGER.info("Client connected to the application.");
                 LOGGER.info("Getting the client input stream...");

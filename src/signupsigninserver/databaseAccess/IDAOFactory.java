@@ -10,5 +10,9 @@ package signupsigninserver.databaseAccess;
  * @author Alatz
  */
 public class IDAOFactory {
+
+    public static IDAO getDAO() {
+        return new DAO();
+    }
     
 }
