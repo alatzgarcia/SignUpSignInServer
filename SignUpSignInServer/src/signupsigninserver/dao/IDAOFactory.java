@@ -7,10 +7,10 @@ package signupsigninserver.dao;
 
 /**
  * This class creates creates the IDAO classes
- * @author Diego y Diego
+ * @author Diego
  */
 public class IDAOFactory {
-    public IDAO getDAO(){
+    public DAO getDAO(){
         return new DAO();
     }
 }
