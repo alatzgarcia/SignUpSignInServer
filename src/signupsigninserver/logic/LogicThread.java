@@ -5,12 +5,15 @@
  */
 package signupsigninserver.logic;
 
+import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import signupsigninserver.databaseAccess.IDAO;
 import signupsigninserver.exceptions.InvalidOperationException;
+import signupsigninserver.exceptions.LoginExistsException;
 import signupsigninutilities.model.Message;
 import signupsigninutilities.model.User;
 
@@ -20,34 +23,30 @@ import signupsigninutilities.model.User;
  */
 public class LogicThread implements Runnable{
     private static final Logger LOGGER=Logger.getLogger("signupsigninserver.logic.LogicThread");
-    private Socket client;  
+    private Socket socket;  
     private IDAO dao;
     
-    public LogicThread(Socket client, IDAO dao) {
-        this.client = client;
+    public LogicThread(Socket socket, IDAO dao) {
+        this.socket = socket;
         this.dao = dao;
     }
     
-     public void setDao(IDAO dao) {
-        this.dao = dao;
-    }
-
     @Override
     public void run() {
         ObjectOutputStream oos = null;
         ObjectInputStream ois = null;
         try{
             LOGGER.info("Getting the client input stream...");
-            ois = new ObjectInputStream(client.getInputStream());
+            ois = new ObjectInputStream(socket.getInputStream());
             LOGGER.info("Getting the client output stream...");
-            oos = new ObjectOutputStream(client.getOutputStream());
+            oos = new ObjectOutputStream(socket.getOutputStream());
             LOGGER.info("Reading the client message...");
             Message msg = (Message)ois.readObject();
-            LOGGER.info("Mensaje recibido: " + msg.getMessage());
+            /*LOGGER.info("Mensaje recibido: " + msg.getMessage());
             //Message msg = (Message) ois.readObject();
             LOGGER.info("Client message arrived to the server.");
             oos.writeObject(new Message("ok", new User()));
-            
+            */
             switch (msg.getMessage()) {
                 case "login":
                     //executes the login calling the dao
@@ -61,12 +60,12 @@ public class LogicThread implements Runnable{
                     //Does`t receive any of the methods so sends exception
                     throw new InvalidOperationException();                    
             }
-        }catch(InvalidOperationException ioo){
-            LOGGER.info(ioo.getMessage());
-        }catch(Exception e){
-            LOGGER.info(e.getMessage());
+        }catch(Exception lee){ //--TOFIX
+            try {
+                oos.writeObject(new Message("loginExists", null));
+            } catch (IOException ex) {
+                Logger.getLogger(LogicThread.class.getName()).log(Level.SEVERE, null, ex);
+            }
         }
-    }
-    
-    
+    }  
 }

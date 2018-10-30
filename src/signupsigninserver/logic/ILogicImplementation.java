@@ -27,15 +27,15 @@ public class ILogicImplementation {
     
     public void start(){
         ServerSocket server = null;
-        Socket client = null;
+        Socket socket = null;
         try{
             server = new ServerSocket(PORT);
             IDAO dao = IDAOFactory.getDAO(); 
             while(true){
                 LOGGER.info("Awaiting for client connection on port: " + PORT);
-                client = server.accept();
+                socket = server.accept();
                 LOGGER.info("Client connected to the application.");
-                Thread lThread = new Thread(new LogicThread(client, dao));
+                Thread lThread = new Thread(new LogicThread(socket, dao));
                 lThread.start();
                 /*LOGGER.info("Client connected to the application.");
                 LOGGER.info("Getting the client input stream...");
@@ -60,8 +60,8 @@ public class ILogicImplementation {
             //--TOFIX
         } finally{
                 try{
-                if(client!=null){
-                    client.close();
+                if(socket!=null){
+                    socket.close();
                 }
                 if(server!=null){
                     server.close();
