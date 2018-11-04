@@ -30,7 +30,7 @@ public class ConnectionPool  {
         Connection conn = null;
         if(connections<MAX_CONNECTIONS){
              if (dataSource == null) {
-            dataSource = new MysqlDataSource();
+            dataSource = new MysqlConnectionPoolDataSource();
             dataSource.setUser(USERNAME);
             dataSource.setPassword(PASSWORD);
             dataSource.setURL(DATABASE_URL + DB_NAME);
