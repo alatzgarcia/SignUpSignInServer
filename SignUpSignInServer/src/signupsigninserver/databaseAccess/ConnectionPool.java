@@ -17,7 +17,7 @@ import java.util.logging.Logger;
  */
 public class ConnectionPool  {
     private static final Logger LOGGER=Logger.getLogger("signupsigninserver.databaseAccess.ConnectionPool");
-    private MysqlConnectionPoolDataSource dataSource = new MysqlConnectionPoolDataSource();
+    private static MysqlConnectionPoolDataSource dataSource = null;
     public final static String DATABASE_URL = "jdbc:mysql://localhost:3306/";
     public final static String DB_NAME = "Equipo2";
     public final static String USERNAME = "root";
@@ -25,13 +25,16 @@ public class ConnectionPool  {
     public final static int MAX_CONNECTIONS=10;
     public static int connections=0;
     
-    public Connection getConnection() throws SQLException, NotAvailableConnectionException{
+    public static Connection getConnection() throws SQLException, NotAvailableConnectionException{
         LOGGER.info("Connection Pool");
         Connection conn = null;
         if(connections<MAX_CONNECTIONS){
+             if (dataSource == null) {
+            dataSource = new MysqlDataSource();
             dataSource.setUser(USERNAME);
             dataSource.setPassword(PASSWORD);
             dataSource.setURL(DATABASE_URL + DB_NAME);
+             }
             conn = dataSource.getConnection();
             connections++;
             
