@@ -5,10 +5,15 @@
  */
 package signupsigninserver.databaseAccess;
 
-import signupsigninserver.exceptions.NotAvailableConnectionException;
+import signupsigninserver.exceptions.NotAvailableConnectionsException;
 import java.sql.Connection;
 import java.sql.SQLException;
 import com.mysql.cj.jdbc.MysqlConnectionPoolDataSource;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.util.Properties;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -18,41 +23,77 @@ import java.util.logging.Logger;
 public class ConnectionPool  {
     private static final Logger LOGGER=Logger.getLogger("signupsigninserver.databaseAccess.ConnectionPool");
     private static MysqlConnectionPoolDataSource dataSource = null;
-    public final static String DATABASE_URL = "jdbc:mysql://LAPINF09.tartangaLH.eus:3306/";
-    public final static String DB_NAME = "retodatabase";
-    public final static String USERNAME = "user";
-    public final static String PASSWORD = "";
-    public final static int MAX_CONNECTIONS=10;
+    //public final static int MAX_CONNECTIONS=20;
     public static int connections=0;
+
+    private static String dbHost;
+    private static String dbName;
+    private static String dbUser;
+    private static String dbPassword;
+    private static String maxConnections;
     
+
     /**
      * Method that gets connections up to a maximum of n
      * @return the connection
      * @throws SQLException
-     * @throws NotAvailableConnectionException 
+     * @throws NotAvailableConnectionsException 
+     * @throws java.io.IOException 
      */
-    public static Connection getConnection() throws SQLException, NotAvailableConnectionException{
+    public static Connection getConnection() throws SQLException, NotAvailableConnectionsException, IOException {
+       
+        //gets the parameters from the config file
+        if (dbHost == null) { 
+	Properties config = new Properties();
+	FileInputStream input = null;
+	try {
+            input = new FileInputStream("src/signupsigninserver/config/connection.properties");
+            config.load(input); // carga los datos en la variable config
+            dbHost = config.getProperty("ip");
+            dbName = config.getProperty("dbname");
+            dbUser = config.getProperty("username");
+            dbPassword = config.getProperty("password");
+            maxConnections= config.getProperty("max_connections");
+           
+                
+         } catch (FileNotFoundException ex) {
+            Logger.getLogger(ConnectionPool.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IOException ex) {
+            Logger.getLogger(ConnectionPool.class.getName()).log(Level.SEVERE, null, ex);
+        } finally {
+            if (input != null)
+		try {
+                    input.close();
+            } catch (IOException ex) {
+                Logger.getLogger(ConnectionPool.class.getName()).log(Level.SEVERE, null, ex);
+            }
+	}
+    }
+       
+        
+    
         LOGGER.info("Connection Pool");
         Connection conn = null;
-        if(connections<MAX_CONNECTIONS){
+        if(connections<Integer.parseInt(maxConnections)){
              if (dataSource == null) {
                 dataSource = new MysqlConnectionPoolDataSource();
-                dataSource.setUser(USERNAME);
-                dataSource.setPassword(PASSWORD);
-                dataSource.setURL(DATABASE_URL + DB_NAME);
+                dataSource.setUser(dbUser);
+                dataSource.setPassword(dbPassword);
+                dataSource.setURL(dbHost + dbName);
                 dataSource.setServerTimezone("UTC");
              }
             conn = dataSource.getConnection();
             connections++;
+            
             return conn;
             
         }else{
-            throw new NotAvailableConnectionException();
+            throw new NotAvailableConnectionsException();
         }
         
     }
     /**
-     * Method that releases the connection
+     * Method that releases the connection 
      * @param conn
      * @throws SQLException 
      */
