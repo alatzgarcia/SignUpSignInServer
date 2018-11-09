@@ -5,9 +5,10 @@
  */
 package signupsigninserver.databaseAccess;
 
+
 /**
- *
- * @author Alatz
+ * This class creates creates the IDAO classes.
+ * @author Diego
  */
 public class IDAOFactory {
     public static IDAO getDAO(){
