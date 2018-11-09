@@ -5,16 +5,24 @@
  */
 package signupsigninserver.databaseAccess;
 
-import signupsignin.User;
+import signupsigninutilities.model.User;
+import signupsigninserver.exceptions.EmailExistsException;
+import signupsigninserver.exceptions.LoginEmailExistException;
+import signupsigninserver.exceptions.LoginExistsException;
+import signupsigninserver.exceptions.RegisterFailedException;
 
 /**
  *
- * @author Alatz
+ * @author Iker
  */
 public interface IDAO {
 
-    public User login(User user);
+    public User login(User user)throws LoginExistsException, 
+        EmailExistsException, LoginEmailExistException, RegisterFailedException,
+        Exception;
 
-    public User register(User user);
+    public User register(User user) throws LoginExistsException, 
+        EmailExistsException, LoginEmailExistException, RegisterFailedException,
+        Exception;
     
 }
