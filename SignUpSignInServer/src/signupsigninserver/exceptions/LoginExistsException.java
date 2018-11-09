@@ -6,13 +6,17 @@
 package signupsigninserver.exceptions;
 
 /**
- *
+ * Sets the message of an exception an returns it for the display.
  * @author Alatz
  */
 public class LoginExistsException extends Exception{
     private static final String MESSAGE = "Error. El login introducido "
             + "ya existe. Por favor, introduzca otro login diferente.";
     
+     /**
+     * Displays the message when the exception throws.
+     * @return MESSAGE String: The message that will be shown.
+     */
     @Override
     public String getMessage(){
         return MESSAGE;

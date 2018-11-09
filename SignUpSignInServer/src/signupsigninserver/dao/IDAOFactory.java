@@ -6,11 +6,11 @@
 package signupsigninserver.dao;
 
 /**
- * This class creates creates the IDAO classes
+ * This class creates creates the IDAO classes.
  * @author Diego
  */
 public class IDAOFactory {
-    public DAO getDAO(){
+    public IDAO getDAO(){
         return new DAO();
     }
 }

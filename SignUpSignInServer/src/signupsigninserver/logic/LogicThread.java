@@ -5,78 +5,140 @@
  */
 package signupsigninserver.logic;
 
+import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import signupsigninserver.dao.IDAO;
-import signupsigninserver.exceptions.InvalidOperationException;
-import signupsigninuidesktop.model.Message;
-import signupsigninuidesktop.model.User;
-//
+import signupsigninserver.databaseAccess.IDAO;
+import signupsigninserver.exceptions.EmailExistsException;
+import signupsigninserver.exceptions.IncorrectLoginException;
+import signupsigninserver.exceptions.IncorrectPasswordException;
+import signupsigninserver.exceptions.LoginEmailExistException;
+import signupsigninserver.exceptions.LoginExistsException;
+import signupsigninserver.exceptions.RegisterFailedException;
+import signupsigninutilities.model.Message;
+import signupsigninutilities.model.User;
+
 /**
- * This method allows multiple clients to connect.
+ * Class that allows multiple clients to connect at the same time. Managing the
+ * client accepted by the ServerSocket.
  * @author Diego e Iker
  */
 public class LogicThread implements Runnable{
-    private static final Logger LOGGER=Logger.getLogger("signupsigninserver.logic.LogicThread");
-    private Socket client;  
+    private static final Logger LOGGER=Logger.
+            getLogger("signupsigninserver.logic.LogicThread");
+    private Socket socket;  
     private IDAO dao;
     
-    public LogicThread(Socket client) {
-        this.client = client;
-    }
-    
-     public void setDao(IDAO dao) {
+    /**
+     * Constructor for the LogicThread class, receives the ClientSocket, sent by the
+     * ServerSocket after accepting it, and the thread will manage it.
+     * @param socket Socket: The ClientSocket 
+     * @param dao IDAO
+     */
+    public LogicThread(Socket socket, IDAO dao) {
+        this.socket = socket;
         this.dao = dao;
     }
+    
     /**
-     * The thread when it runs, receives a client because he is doing as the server
-     * logic , then, depending the method sends it to the DAO, including some 
-     * exceptions.
+     * Method that runs when the thread it's started.
+     * When the Thread runs gets the Input and Output stream and reads the object
+     * Message sent by the client, depending of the message, the thread does a register,
+     * login or an error method and writes a message "Ok" (Output) for the client.
      */
     @Override
-    public void run() {
-        //creates the input and output
+    public void run(){
         ObjectOutputStream oos = null;
         ObjectInputStream ois = null;
+        User dbUser;
         try{
-            //gets the input
+            //Gets the streams (Output and Input
             LOGGER.info("Getting the client input stream...");
-            ois = new ObjectInputStream(client.getInputStream());
-            //gets the output
+            ois = new ObjectInputStream(socket.getInputStream());
             LOGGER.info("Getting the client output stream...");
-            oos = new ObjectOutputStream(client.getOutputStream());
-            //read the messge sent by the client
+            oos = new ObjectOutputStream(socket.getOutputStream());
             LOGGER.info("Reading the client message...");
             Message msg = (Message)ois.readObject();
-            LOGGER.log(Level.INFO, "Mensaje recibido: {0}", msg.getMessage());
-            //Message msg = (Message) ois.readObject();
-            LOGGER.info("Client message arrived to the server.");
-            oos.writeObject(new Message("ok", new User()));
+            LOGGER.info("Received message: " + msg.getMessage());
             
-            //depending of the message...
+            //Depending of the message received from the client socket...
             switch (msg.getMessage()) {
                 case "login":
-                    //...executes the login calling the dao
+                    //...executes the login calling the dao and then sends "ok" with the user(with additional data from DB)
                     LOGGER.info("Login.");
-                    dao.login(msg.getData());
+                    dbUser = dao.login(msg.getData());
+                    oos.writeObject(new Message("ok", dbUser));
                     break;
                 case "register":
-                    //...executes the register calling the dao
+                    //...executes the register calling the dao and then sends "ok" with the user(with additional data from DB)
                     LOGGER.info("Register.");
-                    dao.register(msg.getData());
+                    dbUser = dao.register(msg.getData());
+                    oos.writeObject(new Message("ok", dbUser));
                     break;
                 default:
-                    //..does`t receive any of the methods so sends exception
+                    //..does`t receive any of the methods so sends exception by object message
                     LOGGER.info("Error.");
-                    throw new InvalidOperationException();                    
+                    oos.writeObject(new Message("invalidOperation", null));
             }
-        }catch(InvalidOperationException ioo){
-            LOGGER.info(ioo.getMessage());
-        }catch(Exception e){
-            LOGGER.info(e.getMessage());
+            // Catches the exceptions which can be thrown and writes a Message
+            // and if there is an error throws another one
+        } catch(LoginExistsException lee){ //--TOFIX
+            try {
+                oos.writeObject(new Message("loginExists", null));
+            } catch (IOException ex) {
+                Logger.getLogger(LogicThread.class.getName()).
+                        log(Level.SEVERE, null, ex);
+            }
+        
+        } catch (EmailExistsException ex) {
+            try {
+                oos.writeObject(new Message("emailExists", null));
+            } catch (IOException ex1) {
+                LOGGER.info("Error on returning error message.");
+            }
+        } catch(LoginEmailExistException ex){
+            LOGGER.info("Error. Incorrect login and email introduced.");
+            try {
+                oos.writeObject(new Message("loginEmailExist", null));
+            } catch (IOException ex1) {
+                LOGGER.info("Error on returning error message.");
+            }
+        } catch (IncorrectLoginException ex) {
+            LOGGER.info("Error. Incorrect login introduced.");
+            try {
+                oos.writeObject(new Message("incorrectLogin", null));
+            } catch (IOException ex1) {
+                LOGGER.info("Error on returning error message.");
+            }
+        } catch (IncorrectPasswordException ex) {
+            try {
+                oos.writeObject(new Message("incorrectPassword", null));
+            } catch (IOException ex1) {
+                LOGGER.info("Error on returning error message.");
+            }
+        } catch(RegisterFailedException ex){
+            LOGGER.info("Error. Register operation failed.");
+            try {
+                oos.writeObject(new Message("registerFailed", null));
+            } catch (IOException ex1) {
+                LOGGER.info("Error on returning error message.");
+            }
+        } catch (ClassNotFoundException ex) {
+            try {
+                oos.writeObject(new Message("incorrectLogin", null));
+            } catch (IOException ex1) {
+                LOGGER.info("Error on returning error message.");
+            }
+        } catch(Exception ex){
+            LOGGER.info("Error.");
+            try {
+                oos.writeObject(new Message("error", null));
+            } catch (IOException ex1) {
+                LOGGER.info("Error on returning error message.");
+            }
         }
-    }
+    }  
 }

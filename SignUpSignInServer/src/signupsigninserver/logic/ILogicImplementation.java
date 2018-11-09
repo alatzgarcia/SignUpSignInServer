@@ -11,7 +11,7 @@ import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.logging.Logger;
-import signupsigninuidesktop.model.Message;
+import signupsigninserver.model.Message;
 
 /**
  *
@@ -19,9 +19,12 @@ import signupsigninuidesktop.model.Message;
  */
 public class ILogicImplementation {
     private final int PUERTO=1/*Meter el puerto*/;
-    private static final Logger LOGGER=Logger.getLogger("signupsigninserver.logic.ILogicImplementation");
+    private static final Logger LOGGER=Logger
+        .getLogger("signupsigninserver.logic.ILogicImplementation");
     
-    
+    /**
+     * 
+     */
     public void init(){
         ServerSocket servidor=null;
         Socket cliente=null;

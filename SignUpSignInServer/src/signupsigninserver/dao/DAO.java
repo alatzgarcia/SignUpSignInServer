@@ -21,7 +21,7 @@ import signupsigninuidesktop.model.User;
  * to login and register.
  * @author Diego y Alatz
  */
-public class DAO {
+public class DAO implements IDAO{
     /**
      * This method have to login the users if the user and password were written
      * right. Otherways, will throw an exception.
@@ -74,6 +74,7 @@ public class DAO {
      *  tries to register but the email and the user exist.
      * @throws Exception Generic exception
      */
+    @Override
     public synchronized User register (User user) throws LoginExistsException, 
         EmailExistsException, Exception {
         //Connection con = connectionPool.getConnection();
@@ -143,5 +144,10 @@ public class DAO {
                 }
             }
         }
+    }
+
+    @Override
+    public void close() throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }
