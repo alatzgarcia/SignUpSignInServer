@@ -6,12 +6,13 @@
 package signupsigninserver.exceptions;
 
 /**
- * Exception class for the invalid operation error
+ * Exception class for no available connections error
  * @author Alatz
  */
-public class InvalidOperationException extends Exception{
-    private static final String MESSAGE = "Error. Tipo de operación"
-            + "no reconocido por el sistema.";
+public class NotAvailableConnectionsException extends Exception {
+    private static final String MESSAGE = "Error. El servidor de la base"
+            + "de datos no puede atender su petición en este momento."
+            + "Inténtelo más tarde.";
     /**
      * Method to get the message of the exception
      * @return returns the error message

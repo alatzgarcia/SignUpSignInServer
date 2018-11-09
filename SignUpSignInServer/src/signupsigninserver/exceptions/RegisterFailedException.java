@@ -6,17 +6,16 @@
 package signupsigninserver.exceptions;
 
 /**
- * Exception class for the invalid operation error
+ * Exception class for the register failed error
  * @author Alatz
  */
-public class InvalidOperationException extends Exception{
-    private static final String MESSAGE = "Error. Tipo de operación"
-            + "no reconocido por el sistema.";
+public class RegisterFailedException extends Exception{
+    private static final String MESSAGE = "Error. El registro de usuario"
+            + "no se ha podido completar con éxito. Vuelva a intentarlo.";
     /**
      * Method to get the message of the exception
      * @return returns the error message
      */
-    @Override
     public String getMessage(){
         return MESSAGE;
     }

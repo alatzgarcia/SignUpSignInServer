@@ -6,12 +6,12 @@
 package signupsigninserver.exceptions;
 
 /**
- * Exception class for the login existing error
+ * Exception class for no current session error on program exit
  * @author Alatz
  */
-public class LoginExistsException extends Exception{
-    private static final String MESSAGE = "Error. El login introducido "
-            + "ya existe. Por favor, introduzca otro login diferente.";
+public class NoCurrentSessionException extends Exception{
+    private static final String MESSAGE = "Error. No se ha detectado ninguna"
+            + " sesión iniciada que permita el cierre de la misma.";
     /**
      * Method to get the message of the exception
      * @return returns the error message
