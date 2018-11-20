@@ -50,7 +50,6 @@ public class ConnectionPool  {
 	try {
             if (dbHost == null) {
                 Properties config = new Properties();
-                
                 input = new FileInputStream("src/signupsigninserver/config/connection.properties");
                 config.load(input); // carga los datos en la variable config
                 dbHost = config.getProperty("ip");
