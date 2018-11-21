@@ -10,7 +10,9 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.Locale;
 import java.util.Properties;
+import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import signupsigninserver.databaseAccess.ConnectionPool;
@@ -35,9 +37,9 @@ public class ILogicImplementation {
     /**
      * Method that creates a ServerSocket and waits for connections
      * It creates a thread for each client
+     * @throws NotAvailableConnectionsException
      */
     public void start() throws NotAvailableConnectionsException{
-                               
                 ServerSocket server = null; 
                 Socket client = null; 
 		
@@ -64,10 +66,6 @@ public class ILogicImplementation {
                         }else
                             throw new NotAvailableConnectionsException();
                         }
-                        
-                        
-                        
-                    
 		} catch (Exception e) {
 			
 		}  finally{
@@ -87,8 +85,10 @@ public class ILogicImplementation {
         
 	
     /**
-     * 
-     * @param args 
+     * main method for the server application
+     * @param args arguments that the application receives
+     * on its initialization
+     * @throws signupsigninserver.exceptions.NotAvailableConnectionsException
      */
     public static void main(String[] args) throws NotAvailableConnectionsException {
         ILogicImplementation server = new ILogicImplementation();
@@ -101,15 +101,17 @@ public class ILogicImplementation {
         Properties config = new Properties();
 	FileInputStream input = null;
 	try {
-            input = new FileInputStream("src/signupsigninserver/config/connection.properties");
+            /*input = new FileInputStream("src/signupsigninserver/config/config.properties");
             config.load(input);
             port=Integer.parseInt(config.getProperty("port"));
-            maxThreads=Integer.parseInt(config.getProperty("max_threads"));
+            maxThreads=Integer.parseInt(config.getProperty("max_threads"));*/
            
-         } catch (FileNotFoundException ex) {
-            LOGGER.info("No encuentra archivo");
-        } catch (IOException ex) {
-            Logger.getLogger(ILogicImplementation.class.getName()).log(Level.SEVERE, null, ex);
+            port = Integer.parseInt(ResourceBundle.getBundle
+                ("signupsigninserver.config.config").getString("port"));
+            maxThreads = Integer.parseInt(ResourceBundle.getBundle
+                ("signupsigninserver.config.config").getString("max_threads"));
+        } catch (Exception ex) {
+            LOGGER.severe(ex.getMessage());
         } finally {
             if (input != null)
 		try {

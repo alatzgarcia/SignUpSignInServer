@@ -13,7 +13,9 @@ import com.mysql.cj.jdbc.exceptions.CommunicationsException;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.Locale;
 import java.util.Properties;
+import java.util.ResourceBundle;
 import java.util.logging.Logger;
 import signupsigninserver.exceptions.GenericException;
 import signupsigninserver.exceptions.ServerNotAvailableException;
@@ -49,15 +51,25 @@ public class ConnectionPool  {
 	FileInputStream input = null;
 	try {
             if (dbHost == null) {
-                Properties config = new Properties();
-                input = new FileInputStream("src/signupsigninserver/config/connection.properties");
+                /*Properties config = new Properties();
+                input = new FileInputStream("src/signupsigninserver/config/config.properties");
                 config.load(input); // carga los datos en la variable config
                 dbHost = config.getProperty("ip");
-                dbName = config.getProperty("dbname");
-                dbUser = config.getProperty("username");
-                dbPassword = config.getProperty("password");
-                maxConnections= config.getProperty("max_connections");
+                *///dbName = config.getProperty("dbname");
+                //dbUser = config.getProperty("username");
+                //dbPassword = config.getProperty("password");
+                //maxConnections= config.getProperty("max_connections");
                 
+                dbHost = ResourceBundle.getBundle
+                ("signupsigninserver.config.config").getString("ip");
+                dbName = ResourceBundle.getBundle
+                ("signupsigninserver.config.config").getString("dbname");
+                dbUser = ResourceBundle.getBundle
+                ("signupsigninserver.config.config").getString("username");
+                dbPassword = ResourceBundle.getBundle
+                ("signupsigninserver.config.config").getString("password");
+                maxConnections = ResourceBundle.getBundle
+                ("signupsigninserver.config.config").getString("max_connections");
                 LOGGER.info("Connection Pool data received");
             }
             
@@ -80,12 +92,6 @@ public class ConnectionPool  {
             throw new ServerNotAvailableException();
         } catch(NotAvailableConnectionsException ce){
             throw new ServerNotAvailableException();
-        } catch (FileNotFoundException fne) {
-            LOGGER.severe(fne.getMessage());
-            throw new GenericException();
-        } catch (IOException ioex) {
-            LOGGER.severe(ioex.getMessage());
-            throw new GenericException();
         } catch(Exception ex){
             LOGGER.severe(ex.getMessage());
             throw new GenericException();
