@@ -1,5 +1,4 @@
-//*
- * To change this license header, choose License Headers in Project Properties.
+/** To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
@@ -35,6 +34,7 @@ public class ILogicImplementation {
     /**
      * Method that creates a ServerSocket and waits for connections
      * It creates a thread for each client
+     * @throws signupsigninserver.exceptions.NotAvailableConnectionsException
      */
     public void start() throws NotAvailableConnectionsException{
                                
@@ -89,6 +89,7 @@ public class ILogicImplementation {
     /**
      * 
      * @param args 
+     * @throws signupsigninserver.exceptions.NotAvailableConnectionsException 
      */
     public static void main(String[] args) throws NotAvailableConnectionsException {
         ILogicImplementation server = new ILogicImplementation();
