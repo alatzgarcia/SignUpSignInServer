@@ -10,8 +10,7 @@ package signupsigninserver.exceptions;
  * @author Alatz
  */
 public class GenericException extends Exception{
-    private static final String MESSAGE = "Error. El email introducido "
-            + "ya existe. Por favor, introduzca otro email diferente.";
+    private static final String MESSAGE = "Error. ";
     
     /**
      * Method to get the message of the exception

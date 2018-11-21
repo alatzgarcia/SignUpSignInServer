@@ -1,4 +1,4 @@
-//*
+/*
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.Properties;
+import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import signupsigninserver.databaseAccess.ConnectionPool;
@@ -69,7 +70,7 @@ public class ILogicImplementation {
                         
                     
 		} catch (Exception e) {
-			
+                    LOGGER.severe(e.getMessage());
 		}  finally{
                     try{
                         
@@ -98,6 +99,13 @@ public class ILogicImplementation {
      * Method that takes the parameters from the config file
      */
     private void getData() {
+        
+        /*port=ResourceBundle.getBundle("signupsigninserver.config.connection").getString("port");
+        maxThreads=Integer.parseInt(ResourceBundle.getBundle("signupsigninserver.config.connection")
+                          .getString("max_threads"));
+        LOGGER.info("Port:"+String.valueOf(port));*/
+       
+        
         Properties config = new Properties();
 	FileInputStream input = null;
 	try {

@@ -14,12 +14,15 @@ import java.util.logging.Logger;
 import signupsigninutilities.model.Message;
 import signupsigninutilities.model.User;
 import signupsigninserver.databaseAccess.IDAO;
+import signupsigninserver.exceptions.ConfigurationParameterNotFoundException;
 import signupsigninserver.exceptions.EmailExistsException;
 import signupsigninserver.exceptions.IncorrectLoginException;
 import signupsigninserver.exceptions.IncorrectPasswordException;
 import signupsigninserver.exceptions.LoginEmailExistException;
 import signupsigninserver.exceptions.LoginExistsException;
+import signupsigninserver.exceptions.NotAvailableConnectionsException;
 import signupsigninserver.exceptions.RegisterFailedException;
+import signupsigninserver.exceptions.ServerNotAvailableException;
 
 /**
  * Class that allows multiple clients to connect at the same time. Managing the
@@ -87,14 +90,16 @@ public class LogicThread implements Runnable{
             // and if there is an error throws another one
         } catch(LoginExistsException lee){ //--TOFIX
             try {
+                LOGGER.severe(lee.getMessage());
                 oos.writeObject(new Message("loginExists", null));
             } catch (IOException ex) {
                 Logger.getLogger(LogicThread.class.getName()).
                         log(Level.SEVERE, null, ex);
             }
         
-        } catch (EmailExistsException ex) {
+        } catch (EmailExistsException eee) {
             try {
+                LOGGER.severe(eee.getMessage());
                 oos.writeObject(new Message("emailExists", null));
             } catch (IOException ex1) {
                 LOGGER.info("Error on returning error message.");
@@ -113,8 +118,9 @@ public class LogicThread implements Runnable{
             } catch (IOException ex1) {
                 LOGGER.info("Error on returning error message.");
             }
-        } catch (IncorrectPasswordException ex) {
+        } catch (IncorrectPasswordException ipe) {
             try {
+                LOGGER.severe(ipe.getMessage());
                 oos.writeObject(new Message("incorrectPassword", null));
             } catch (IOException ex1) {
                 LOGGER.info("Error on returning error message.");
@@ -132,6 +138,27 @@ public class LogicThread implements Runnable{
             } catch (IOException ex1) {
                 LOGGER.info("Error on returning error message.");
             }
+        }catch (ServerNotAvailableException ex) {
+            try {
+                oos.writeObject(new Message("serverNotAvailable", null));
+            } catch (IOException ex1) {
+                LOGGER.info("Error on returning error message.");
+            }
+        
+        }catch (ConfigurationParameterNotFoundException ex) {
+            try {
+                oos.writeObject(new Message("configParamNotFound", null));
+            } catch (IOException ex1) {
+                LOGGER.info("Error on returning error message.");
+            }
+        
+        }catch (NotAvailableConnectionsException ex) {
+            try {
+                oos.writeObject(new Message("notAvailableConnections", null));
+            } catch (IOException ex1) {
+                LOGGER.info("Error on returning error message.");
+            }
+        
         } catch(Exception ex){
             LOGGER.info("Error.");
             try {
