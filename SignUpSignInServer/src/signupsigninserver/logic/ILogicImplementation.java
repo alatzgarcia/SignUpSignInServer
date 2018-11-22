@@ -1,16 +1,18 @@
-//*
+/*
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
 package signupsigninserver.logic;
 
+import signupsigninserver.*;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.Properties;
+import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import signupsigninserver.databaseAccess.ConnectionPool;
@@ -29,8 +31,8 @@ public class ILogicImplementation {
             Logger.getLogger("signupsigninserver.ILogicImplementation");
     private static int maxThreads;
     private static int port;
-    private static int threadsnum;
-    private static int connections;
+    private static int threadsnum=0;
+    
     
     /**
      * Method that creates a ServerSocket and waits for connections
@@ -44,7 +46,10 @@ public class ILogicImplementation {
                 //Asks the IDAOFactory for a DAO object
                 IDAO dao = IDAOFactory.getDAO();
 		try{ 
+                    LOGGER.info("Hola");
                     getData();
+                    
+                       
                     server = new ServerSocket(port);
                     //the server keeps waiting for connections 
                     while(true){
@@ -55,7 +60,7 @@ public class ILogicImplementation {
                        
                         //when a client connects, a thread is created and it 
                         //takes charge of the execution
-                        if(connections<maxThreads){
+                        if(threadsnum<maxThreads){
                             Thread thread = new Thread(
                                     new LogicThread(client, (DAO) dao));
                             threadsnum++;
@@ -63,7 +68,7 @@ public class ILogicImplementation {
                             threadsnum--;
                         }else
                             throw new NotAvailableConnectionsException();
-                        }
+                       }
                         
                         
                         
@@ -98,7 +103,13 @@ public class ILogicImplementation {
      * Method that takes the parameters from the config file
      */
     private void getData() {
-        Properties config = new Properties();
+       
+        port=Integer.parseInt(ResourceBundle.getBundle("signupsigninserver.config.connection")
+                          .getString("port"));
+        maxThreads=Integer.parseInt(ResourceBundle.getBundle("signupsigninserver.config.connection")
+                          .getString("max_threads"));
+        LOGGER.info("Port:"+String.valueOf(port));
+        /*Properties config = new Properties();
 	FileInputStream input = null;
 	try {
             input = new FileInputStream("src/signupsigninserver/config/connection.properties");
@@ -117,7 +128,7 @@ public class ILogicImplementation {
             } catch (IOException ex) {
                 Logger.getLogger(ILogicImplementation.class.getName()).log(Level.SEVERE, null, ex);
             } 
-	}
+	}*/
     }
 
     
