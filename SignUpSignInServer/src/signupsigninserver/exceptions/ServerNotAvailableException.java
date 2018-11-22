@@ -11,7 +11,7 @@ package signupsigninserver.exceptions;
  * @author Alatz
  */
 public class ServerNotAvailableException extends Exception{
-    private static final String MESSAGE = "Error. El servidor no se encuentra"
+    private static final String MESSAGE = "Error. El servidor no se encuentra "
             + "disponible en estos momentos. Por favor, vuelva a intentarlo "
             + "en otro momento.";
     /**
