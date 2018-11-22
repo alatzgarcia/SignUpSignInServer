@@ -9,12 +9,17 @@ import signupsigninserver.exceptions.NotAvailableConnectionsException;
 import java.sql.Connection;
 import java.sql.SQLException;
 import com.mysql.cj.jdbc.MysqlConnectionPoolDataSource;
+import com.mysql.cj.jdbc.exceptions.CommunicationsException;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Properties;
+import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import signupsigninserver.exceptions.ConfigurationParameterNotFoundException;
+import signupsigninserver.exceptions.GenericException;
+import signupsigninserver.exceptions.ServerNotAvailableException;
 
 /**
  * Class that manages connections with the database
@@ -23,7 +28,6 @@ import java.util.logging.Logger;
 public class ConnectionPool  {
     private static final Logger LOGGER=Logger.getLogger("signupsigninserver.databaseAccess.ConnectionPool");
     private static MysqlConnectionPoolDataSource dataSource = null;
-    //public final static int MAX_CONNECTIONS=20;
     public static int connections=0;
 
     private static String dbHost;
@@ -36,30 +40,79 @@ public class ConnectionPool  {
     /**
      * Method that gets connections up to a maximum of n
      * @return the connection
+     * @throws signupsigninserver.exceptions.ServerNotAvailableException
      * @throws SQLException
      * @throws NotAvailableConnectionsException 
      * @throws java.io.IOException 
+     * @throws signupsigninserver.exceptions.GenericException 
+     * @throws signupsigninserver.exceptions.ConfigurationParameterNotFoundException 
      */
-    public static Connection getConnection() throws SQLException, NotAvailableConnectionsException, IOException {
+    public synchronized static Connection getConnection() throws ServerNotAvailableException, 
+            SQLException, NotAvailableConnectionsException, IOException, 
+            GenericException, ConfigurationParameterNotFoundException {
        
         //gets the parameters from the config file
-        if (dbHost == null) { 
-	Properties config = new Properties();
-	FileInputStream input = null;
+        FileInputStream input = null;
 	try {
-            input = new FileInputStream("src/signupsigninserver/config/connection.properties");
-            config.load(input); // carga los datos en la variable config
-            dbHost = config.getProperty("ip");
-            dbName = config.getProperty("dbname");
-            dbUser = config.getProperty("username");
-            dbPassword = config.getProperty("password");
-            maxConnections= config.getProperty("max_connections");
-           
+            if (dbHost == null) {
+                dbHost=ResourceBundle.getBundle("signupsigninserver.config.connection")
+                        .getString("ip");
+                dbName=ResourceBundle.getBundle("signupsigninserver.config.connection")
+                          .getString("dbname");
+                dbUser=ResourceBundle.getBundle("signupsigninserver.config.connection")
+                          .getString("username");
+                dbPassword=ResourceBundle.getBundle("signupsigninserver.config.connection")
+                          .getString("password");
+                maxConnections=ResourceBundle.getBundle("signupsigninserver.config.connection")
+                          .getString("max_connections");
+        
+                /*Properties config = new Properties();
                 
-         } catch (FileNotFoundException ex) {
-            Logger.getLogger(ConnectionPool.class.getName()).log(Level.SEVERE, null, ex);
+                input = new FileInputStream("src/signupsigninserver/config/connection.properties");
+                config.load(input); // carga los datos en la variable config
+                dbHost = config.getProperty("ip");
+                dbName = config.getProperty("dbname");
+                dbUser = config.getProperty("username");
+                dbPassword = config.getProperty("password");
+                maxConnections= config.getProperty("max_connections");
+                
+                LOGGER.info("Connection Pool data received");*/
+            }
+            
+            Connection conn = null;
+            if(connections<Integer.parseInt(maxConnections)){
+                if (dataSource == null) {
+                    dataSource = new MysqlConnectionPoolDataSource();
+                    dataSource.setUser(dbUser);
+                    dataSource.setPassword(dbPassword);
+                    dataSource.setURL(dbHost + dbName);
+                    dataSource.setServerTimezone("UTC");
+                }
+                conn = dataSource.getConnection();
+                connections++;
+                return conn;    
+            } else {
+                throw new NotAvailableConnectionsException();
+            }   
+        /*} catch (FileNotFoundException ex) {
+            LOGGER.severe(ex.getMessage());
+            throw new GenericException();
         } catch (IOException ex) {
-            Logger.getLogger(ConnectionPool.class.getName()).log(Level.SEVERE, null, ex);
+            LOGGER.severe(ex.getMessage());
+            throw new GenericException();*/
+        } catch (CommunicationsException ex) {
+            LOGGER.severe(ex.getMessage());
+            throw new ServerNotAvailableException();
+        } catch (SQLException se){
+            LOGGER.severe(se.getMessage());
+            if(dbHost==null || dbName==null|| dbUser==null){
+               throw new ConfigurationParameterNotFoundException(); 
+            }else{
+               throw new ServerNotAvailableException();
+            }           
+        }catch(Exception e){
+            LOGGER.severe(e.getMessage());
+            throw new GenericException();
         } finally {
             if (input != null)
 		try {
@@ -67,30 +120,7 @@ public class ConnectionPool  {
             } catch (IOException ex) {
                 Logger.getLogger(ConnectionPool.class.getName()).log(Level.SEVERE, null, ex);
             }
-	}
-    }
-       
-        
-    
-        LOGGER.info("Connection Pool");
-        Connection conn = null;
-        if(connections<Integer.parseInt(maxConnections)){
-             if (dataSource == null) {
-                dataSource = new MysqlConnectionPoolDataSource();
-                dataSource.setUser(dbUser);
-                dataSource.setPassword(dbPassword);
-                dataSource.setURL(dbHost + dbName);
-                dataSource.setServerTimezone("UTC");
-             }
-            conn = dataSource.getConnection();
-            connections++;
-            
-            return conn;
-            
-        }else{
-            throw new NotAvailableConnectionsException();
-        }
-        
+	}      
     }
     /**
      * Method that releases the connection 
@@ -98,8 +128,12 @@ public class ConnectionPool  {
      * @throws SQLException 
      */
     public void releaseConnection(Connection conn) throws SQLException{
-        conn.close();
-        connections--;
+        try{
+            conn.close();
+            connections--;
+        } catch(Exception e){
+            LOGGER.severe("Está dando un errorsito no mas");
+        }
     }
     
     

@@ -14,15 +14,20 @@ import signupsigninutilities.model.User;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Statement;
+import signupsigninserver.exceptions.ConfigurationParameterNotFoundException;
 
 
 import signupsigninserver.exceptions.EmailExistsException;
+import signupsigninserver.exceptions.GenericException;
 import signupsigninserver.exceptions.IncorrectLoginException;
 import signupsigninserver.exceptions.IncorrectPasswordException;
 import signupsigninserver.exceptions.LoginEmailExistException;
 import signupsigninserver.exceptions.LoginExistsException;
+import signupsigninserver.exceptions.NotAvailableConnectionsException;
 import signupsigninserver.exceptions.RegisterFailedException;
+import signupsigninserver.exceptions.ServerNotAvailableException;
 
 
 /**
@@ -46,11 +51,11 @@ public class DAO implements IDAO {
      * @throws Exception Generic exceptions
      */
     @Override
-    public synchronized User login (User user) throws IncorrectLoginException,
-            IncorrectPasswordException, Exception{
+    public User login (User user) throws IncorrectLoginException,
+            IncorrectPasswordException, ServerNotAvailableException, Exception{
+        Connection con = null;
         try {
-            
-            Connection con = ConnectionPool.getConnection();
+            con = ConnectionPool.getConnection();
             LOGGER.info("Conexion recibida");
             String query ="SELECT * from usuario WHERE Login=?";
             PreparedStatement ps = con.prepareStatement(query);
@@ -74,15 +79,26 @@ public class DAO implements IDAO {
             } else{
                 throw new IncorrectLoginException();
             }
-        } catch(IncorrectLoginException ile){
+        } catch(IncorrectLoginException ile){;
                 throw new IncorrectLoginException();
         } catch(IncorrectPasswordException ipe){
                 throw new IncorrectPasswordException();
+        } catch(ServerNotAvailableException snae){
+                throw new ServerNotAvailableException();
+        } catch (ConfigurationParameterNotFoundException se){
+            LOGGER.severe(se.getMessage());
+            throw new ConfigurationParameterNotFoundException();
+        } catch (NotAvailableConnectionsException se){
+            LOGGER.severe(se.getMessage());
+            throw new NotAvailableConnectionsException();
+        }catch(Exception e){
+            LOGGER.severe(e.getMessage());
+            throw new GenericException();
+        } finally{
+            if(con != null){
+                connectionPool.releaseConnection(con);
+            }
         }
-        catch(Exception e){
-            throw new Exception();
-        }
-       
     }
     /**
      * 
@@ -102,46 +118,38 @@ public class DAO implements IDAO {
     public User register (User user) throws LoginExistsException, 
         EmailExistsException, LoginEmailExistException, RegisterFailedException,
         Exception {
-       
+        Connection con = null;
         try{
             boolean loginFound=false;
             boolean emailFound=false;
-        
             // Selects to validate if the login or email are on use
             String sqlStatement="SELECT * from usuario WHERE Login=?";
             String sqlStatement2="SELECT * from usuario WHERE Email=?";
         
-            Connection con = connectionPool.getConnection();
+            con = connectionPool.getConnection();
             
             PreparedStatement ps = con.prepareStatement(sqlStatement);
-            
             ps.setString(1, user.getLogin());
-              ResultSet rs = ps.executeQuery();
-               if(rs.next()){
+                ResultSet rs = ps.executeQuery();
+                if(rs.next()){
                     loginFound=true;
-               }
+                }
             ps=con.prepareStatement(sqlStatement2);
-            
             ps.setString(1, user.getEmail());
-            
             rs = ps.executeQuery();
-               if(rs.next()){
-                    emailFound=true;
-               }
-           
+            if(rs.next()){
+                emailFound=true;
+            }
             if(emailFound && loginFound){
                 /*if the email and user were found in the execute throws 
                 *exception
-               */
-                connectionPool.releaseConnection(con);
+                */
                 throw new LoginEmailExistException();
             } else if(loginFound){
                 //if the login was found in the execute throws exception
-                connectionPool.releaseConnection(con);
                 throw new LoginExistsException();
             } else if(emailFound){
                 //if the email was found in the exception thows exception
-                connectionPool.releaseConnection(con);
                 throw new EmailExistsException();
             } else{
                 /* 
@@ -151,8 +159,6 @@ public class DAO implements IDAO {
                 *  the email or the 
                 *  login arent repeated
                 */   
-               
-               
                 sqlStatement="insert into usuario (Login, FullName, Email, Password) "
                         + "values (?,?,?,?) ";
                 ps = con.prepareStatement(sqlStatement, 
@@ -163,15 +169,11 @@ public class DAO implements IDAO {
                 ps.setString(3, user.getEmail());
                 ps.setString(4, user.getPassword());
                 
-                
-              
                 int affectedRows = ps.executeUpdate();
-                
                 //checks if any of the rows in the database were updated
                 if(affectedRows == 0){
                     // if not throws an exception
                     ps.close();
-                    connectionPool.releaseConnection(con);
                     throw new RegisterFailedException();
                 } else{
                     //if it was inserted returns the user, with the id setted
@@ -179,19 +181,34 @@ public class DAO implements IDAO {
                     rs.next();
                     user.setId((int) rs.getLong(1));
                     ps.close();
-                    connectionPool.releaseConnection(con);
                     return user;
                 }
             }
-         } catch(LoginEmailExistException leee){
-                throw new LoginEmailExistException();
+        } catch(LoginEmailExistException leee){
+            LOGGER.info(leee.getMessage());
+            throw new LoginEmailExistException();
         } catch(LoginExistsException lee){
-                throw new LoginExistsException();
+            LOGGER.info(lee.getMessage());
+            throw new LoginExistsException();
         }catch(EmailExistsException eee){
+            LOGGER.info(eee.getMessage());
             throw new EmailExistsException();
-        } catch(Exception ex){
+        }catch(ServerNotAvailableException snae){
+            LOGGER.info(snae.getMessage());
+            throw new ServerNotAvailableException();
+        } catch (ConfigurationParameterNotFoundException se){
+            LOGGER.severe(se.getMessage());
+            throw new ConfigurationParameterNotFoundException();
+        } catch (NotAvailableConnectionsException se){
+            LOGGER.severe(se.getMessage());
+            throw new NotAvailableConnectionsException();
+        }catch(Exception ex){
             LOGGER.info(ex.getMessage());
-            throw new Exception();
+            throw new GenericException();
+        } finally{
+            if(con!=null){
+                connectionPool.releaseConnection(con);
+            }
         }
     
 
