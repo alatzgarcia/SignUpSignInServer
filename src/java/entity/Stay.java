@@ -5,44 +5,88 @@
  */
 package entity;
 
+import java.io.Serializable;
 import java.util.Date;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.ManyToOne;
+import javax.persistence.Table;
 
 /**
  *
  * @author 2dam
  */
-public class Stay {
-    private int id;
-    private String guest;
-    private int room;
+@Entity
+@Table(name="stay",schema="albergueperrondb")
+public class Stay implements Serializable {
+
+    private static final long serialVersionUID = 1L;
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
+   private String id;
+    @ManyToOne
+    private User guest;
+    @ManyToOne
+    private Room room;
     private Date date;
 
-    public int getId() {
+    @Override
+    public int hashCode() {
+        int hash = 0;
+        hash += (id != null ? id.hashCode() : 0);
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object object) {
+        // TODO: Warning - this method won't work in the case the id fields are not set
+        if (!(object instanceof Stay)) {
+            return false;
+        }
+        Stay other = (Stay) object;
+        if ((this.id == null && other.id != null) || (this.id != null && !this.id.equals(other.id))) {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public String toString() {
+        return "entity.Stay[ id=" + id + " ]";
+    }
+
+    public static long getSerialVersionUID() {
+        return serialVersionUID;
+    }
+
+    public String getId() {
         return id;
     }
 
-    public void setId(int id) {
-        this.id = id;
-    }
-
-    public String getGuest() {
+    public User getGuest() {
         return guest;
     }
 
-    public void setGuest(String guest) {
-        this.guest = guest;
-    }
-
-    public int getRoom() {
+    public Room getRoom() {
         return room;
-    }
-
-    public void setRoom(int room) {
-        this.room = room;
     }
 
     public Date getDate() {
         return date;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
+
+    public void setGuest(User guest) {
+        this.guest = guest;
+    }
+
+    public void setRoom(Room room) {
+        this.room = room;
     }
 
     public void setDate(Date date) {

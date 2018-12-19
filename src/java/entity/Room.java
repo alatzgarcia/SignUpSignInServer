@@ -5,46 +5,111 @@
  */
 package entity;
 
+import java.io.Serializable;
+import java.util.List;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.OneToMany;
+import javax.persistence.Table;
+
 /**
  *
  * @author 2dam
  */
-public class Room {
-    private int roomNum;
-    private int totalSpace;
-    private int availableSpace;
+@Entity
+@Table(name="room",schema="albergueperrondb")
+public class Room implements Serializable {
+    
+    private static final long serialVersionUID = 1L;
+    
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    private Integer roomNum;
+    private Integer totalSpace;
+    private Integer availableSpace;
     private String status;
+    @OneToMany (mappedBy="room")
+    private List <Incident> incidents;
+    @OneToMany (mappedBy="room")
+    private List <Stay> stays;
+    
+    @Override
+    public int hashCode() {
+        int hash = 0;
+        hash += (roomNum != null ? roomNum.hashCode() : 0);
+        return hash;
+    }
 
-    public int getRoomNum() {
+    @Override
+    public boolean equals(Object object) {
+        // TODO: Warning - this method won't work in the case the id fields are not set
+        if (!(object instanceof Room)) {
+            return false;
+        }
+        Room other = (Room) object;
+        if ((this.roomNum == null && other.roomNum != null) || (this.roomNum != null && !this.roomNum.equals(other.roomNum))) {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public String toString() {
+        return "entity.Room[ id=" + roomNum + " ]";
+    }
+
+    public static long getSerialVersionUID() {
+        return serialVersionUID;
+    }
+
+    public Integer getRoomNum() {
         return roomNum;
     }
 
-    public void setRoomNum(int roomNum) {
-        this.roomNum = roomNum;
-    }
-
-    public int getTotalSpace() {
+    public Integer getTotalSpace() {
         return totalSpace;
     }
 
-    public void setTotalSpace(int totalSpace) {
-        this.totalSpace = totalSpace;
-    }
-
-    public int getAvailableSpace() {
+    public Integer getAvailableSpace() {
         return availableSpace;
-    }
-
-    public void setAvailableSpace(int availableSpace) {
-        this.availableSpace = availableSpace;
     }
 
     public String getStatus() {
         return status;
     }
 
+    public void setRoomNum(Integer roomNum) {
+        this.roomNum = roomNum;
+    }
+
+    public void setTotalSpace(Integer totalSpace) {
+        this.totalSpace = totalSpace;
+    }
+
+    public void setAvailableSpace(Integer availableSpace) {
+        this.availableSpace = availableSpace;
+    }
+
     public void setStatus(String status) {
         this.status = status;
+    }
+
+    public List<Incident> getIncidents() {
+        return incidents;
+    }
+
+    public void setIncidents(List<Incident> incidents) {
+        this.incidents = incidents;
+    }
+
+    public List<Stay> getStays() {
+        return stays;
+    }
+
+    public void setStays(List<Stay> stays) {
+        this.stays = stays;
     }
     
     

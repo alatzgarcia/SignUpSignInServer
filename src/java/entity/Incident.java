@@ -11,8 +11,9 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinTable;
+import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
 /**
@@ -20,22 +21,21 @@ import javax.persistence.Table;
  * @author 2dam
  */
 @Entity
-@Table(name="pet",schema="albergueperrondb")
-public class Pet implements Serializable {
+@Table(name="incident",schema="albergueperrondb")
+public class Incident implements Serializable {
 
     private static final long serialVersionUID = 1L;
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-   private Integer id;
+    private Integer id;
+    private String incidentType;
+    @ManyToMany
+    @JoinTable(name="INCI_USERS")
+    private List <User> implicateds;
+    private String description;
     @ManyToOne
-   private User owner;
-   private String specie;
-   private String race;
-   private String name;
-   private String colour;
-   private String description;
-   @OneToMany (mappedBy="owner")
-   private List<User> pets;
+    private Room room;
+    
 
     @Override
     public int hashCode() {
@@ -47,10 +47,10 @@ public class Pet implements Serializable {
     @Override
     public boolean equals(Object object) {
         // TODO: Warning - this method won't work in the case the id fields are not set
-        if (!(object instanceof Pet)) {
+        if (!(object instanceof Incident)) {
             return false;
         }
-        Pet other = (Pet) object;
+        Incident other = (Incident) object;
         if ((this.id == null && other.id != null) || (this.id != null && !this.id.equals(other.id))) {
             return false;
         }
@@ -59,7 +59,7 @@ public class Pet implements Serializable {
 
     @Override
     public String toString() {
-        return "entity.Pet[ id=" + id + " ]";
+        return "entity.Incident[ id=" + id + " ]";
     }
 
     public static long getSerialVersionUID() {
@@ -70,72 +70,44 @@ public class Pet implements Serializable {
         return id;
     }
 
-    public User getOwnerId() {
-        return owner;
+    public String getIncidentType() {
+        return incidentType;
     }
 
-    public String getSpecie() {
-        return specie;
-    }
-
-    public String getRace() {
-        return race;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public String getColour() {
-        return colour;
+    public List<User> getImplicateds() {
+        return implicateds;
     }
 
     public String getDescription() {
         return description;
     }
 
+    
+
+    public Room getRoom() {
+        return room;
+    }
+
     public void setId(Integer id) {
         this.id = id;
     }
 
-    public void setOwnerId(User owner) {
-        this.owner = owner;
+    public void setIncidentType(String incidentType) {
+        this.incidentType = incidentType;
     }
 
-    public void setSpecie(String specie) {
-        this.specie = specie;
-    }
-
-    public void setRace(String race) {
-        this.race = race;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public void setColour(String colour) {
-        this.colour = colour;
+    public void setImplicateds(List<User> implicateds) {
+        this.implicateds = implicateds;
     }
 
     public void setDescription(String description) {
         this.description = description;
     }
 
-    public User getOwner() {
-        return owner;
-    }
+   
 
-    public void setOwner(User owner) {
-        this.owner = owner;
-    }
-
-    public List<User> getPets() {
-        return pets;
-    }
-
-    public void setPets(List<User> pets) {
-        this.pets = pets;
+    public void setRoom(Room room) {
+        this.room = room;
     }
     
     
